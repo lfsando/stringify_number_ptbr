@@ -6,7 +6,6 @@ So far, it only works with numbers less than one million
 Usage:
 ```
 from stringify import NumeroExtenso
-n = 45501
-NumeroExtenso(n).humanize()
-'quarenta e cinco mil quinhentos e um'
+n = 123456                                                                                                             > NumeroExtenso(n).humanize()
+'cento e vinte e três mil quatrocentos e cinquenta e seis'
 ```
