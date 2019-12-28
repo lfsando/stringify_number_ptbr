@@ -1,5 +1,7 @@
-_numbers = {
-    0: "zero",
+from typing import Union, Tuple
+
+numbers = {
+    0: "",
     1: "um",
     2: "dois",
     3: "três",
@@ -40,77 +42,74 @@ _numbers = {
 }
 
 
-class NumeroExtenso:
-    def __init__(self, value: int):
+class Num2Word:
+    def __init__(self, value: Union[int, float]):
         self.integer = int(value)
 
     def humanize(self, value=None):
-        integer = int(self.integer) if value is None else int(value)
+        integer = self.integer if value is None else int(value)
 
-        try:
-            return _numbers[integer]
-        except KeyError:
-            pass
+        if numbers.get(integer): return numbers[integer]
 
         result = ""
         if integer < 20:
             return self.humanize_ones(integer)
         elif integer < 100:
             return self.humanize_tens(integer)
-        elif integer < 1000:
+        elif integer < 1_000:
             return self.humanize_hundreds(integer)
-        elif integer < 1000000:
+        elif integer < 1_000_000:
             return self.humanize_thousands(integer)
+        elif integer < 1_000_000_000:
+            return self.humanize_millions(integer)
 
         return result
 
-    def humanize_ones(self, integer: int):
-        return _numbers[integer]
+    def humanize_ones(self, integer: int) -> str:
+        return self.validate(numbers[integer])
 
-    def humanize_tens(self, integer: int):
-        try:
-            return _numbers[integer]
-        except KeyError:
-            pass
-        d1, d2 = [int(x) for x in list(str(integer))]
-        return f"{_numbers[d1 * 10]} e {_numbers[d2]}"
+    def humanize_tens(self, integer: int) -> str:
+        if numbers.get(integer): return numbers[integer]
+
+        d1, d2 = [int(x) for x in str(integer)]
+        return self.validate(f"{numbers[d1 * 10]} e {numbers[d2]}")
 
     def humanize_hundreds(self, integer: int):
-        try:
-            return _numbers[integer]
-        except KeyError:
-            pass
+        if numbers.get(integer): return numbers[integer]
 
-        d1, d2 = int(str(integer)[0]), int(str(integer)[1:])
-        if d1 == 1:
-            hundreds = "cento"
-        else:
-            hundreds = _numbers[d1 * 100]
+        d1, d2 = self.split_number(integer, 1)
+        hundreds = "cento" if d1 == 1 else numbers[d1 * 100]
         tens = self.humanize(d2)
-        return f"{hundreds} e {tens}"
+        return self.validate(f"{hundreds} e {tens}")
 
     def humanize_thousands(self, integer):
-        try:
-            return _numbers[integer]
-        except KeyError:
-            pass
+        if numbers.get(integer): return numbers[integer]
 
-        if integer < 10000:
-            d1, d2 = int(str(integer)[0]), int(str(integer)[1:])
-            thousands = self.humanize_ones(d1) + ' mil' if d1 > 1 else 'mil'
-            hundreds = self.humanize(d2)
-            return f"{thousands}{' e ' if (d2 <= 100 or d2 % 100 == 0) else ' '}{hundreds}"
-        elif integer < 100000:
-            d1, d2 = int(str(integer)[:2]), int(str(integer)[2:])
-            ten_thousands = self.humanize_tens(d1)
-            thousands = self.humanize(d2)
-            return f"{ten_thousands} mil{' e ' if (d2 <= 100 or d2 % 100 == 0) else ' '}{thousands}"
-        elif integer < 1000000:
-            d1, d2 = int(str(integer)[:3]), int(str(integer)[3:])
-            hundred_thousands = self.humanize(d1)
-            if d2 == 0:
-                ten_thousands = ""
-            else:
-                ten_thousands = self.humanize(d2)
+        lim = 1 if integer < 10_000 else 2 if integer < 100_000 else 3
+        d1, d2 = self.split_number(integer, lim)
+        sep = ' e ' if (d2 <= 100 or d2 % 100 == 0) else ' '
+        d1, d2 = self.humanize(d1), self.humanize(d2)
+        return self.validate(f"{d1} mil {sep}{d2}")
 
-            return f"{hundred_thousands} mil{' e ' if (d2 <= 100 or d2 % 100 == 0) else ' '}{ten_thousands}"
+    def humanize_millions(self, integer):
+        if numbers.get(integer): return numbers[integer]
+
+        lim = 1 if integer < 10_000_000 else 2 if integer < 100_000_000 else 3
+        d1, d2 = self.split_number(integer, lim)
+        million = f" milh{'ão' if d1 == 1 else 'ões'}"
+        sep = ' e ' if (d2 <= 100 or d2 % 100 == 0) else ' '
+
+        d1, d2 = self.humanize(d1), self.humanize(d2)
+        d1 += million
+
+        return self.validate(f"{d1}{sep}{d2}")
+
+    def split_number(self, value: Union[str, int], lim: int) -> Tuple[int, int]:
+        value = str(value)
+        return int(value[:lim]), int(value[lim:])
+
+    def validate(self, number: str) -> str:
+        number = number.strip()
+        if number.endswith(' e'):
+            number = number[:-2]
+        return number
