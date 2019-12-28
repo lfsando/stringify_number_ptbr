@@ -1,7 +1,7 @@
 # stringify_number_ptbr
 Write numbers in full. Brazilian Portuguese only.
 
-So far, it only works with numbers less than one million
+Only works for numbers < 1_000_000_000
 
 Usage:
 ```
