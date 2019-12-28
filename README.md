@@ -7,6 +7,6 @@ Usage:
 ```
 from stringify import Num2Word
 n = 123456
-NumeroExtenso(n).humanize()
+Num2Word(n).humanize()
 'cento e vinte e três mil quatrocentos e cinquenta e seis'
 ```
